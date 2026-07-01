@@ -1,17 +1,14 @@
-import { useState } from 'react';
-import { onAdminAuth, adminLogout } from './firebase';
+import { useState, useEffect } from 'react';
 import type { User } from 'firebase/auth';
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, Lock, Loader2, RotateCcw, Play, Sun, Moon } from 'lucide-react';
+import { onAdminAuth, adminLogin, adminLogout } from './firebase';
+import { LayoutDashboard, ShoppingCart, Package, Users, RotateCcw, Settings, Play, LogOut, Lock, Loader2, Menu as MenuIcon, X, Sun, Moon } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Orders from './pages/Orders';
 import Products from './pages/Products';
-import SiteSettings from './pages/SiteSettings';
-import Replacements from './pages/Replacements';
 import Customers from './pages/Customers';
-import { useEffect } from 'react';
-
-// Reuse simple login from firebase helper directly
-import { adminLogin } from './firebase';
+import Replacements from './pages/Replacements';
+import SiteSettings from './pages/SiteSettings';
+import Reels from './pages/Reels';
 
 function LoginScreen({ dark }: { dark: boolean }) {
   const [email, setEmail] = useState('');
@@ -56,7 +53,6 @@ const sideNav = [
   { label: 'Settings', page: 'settings' as Page, icon: Settings },
 ];
 
-
 function Layout({ dark, setDark }: { dark: boolean; setDark: (v: boolean) => void }) {
   const [page, setPage] = useState<Page>('dashboard');
   const [sideOpen, setSideOpen] = useState(false);
@@ -69,7 +65,7 @@ function Layout({ dark, setDark }: { dark: boolean; setDark: (v: boolean) => voi
           <div className="flex items-center gap-2.5"><div className="h-8 w-8 rounded-xl bg-emerald-600 flex items-center justify-center"><Package className="h-4 w-4 text-white" /></div><div><p className={`text-sm font-bold leading-tight ${dark ? 'text-white' : 'text-slate-900'}`}>Admin</p><p className="text-[9px] uppercase tracking-widest text-slate-400 leading-tight">Standalone</p></div></div>
           <div className="flex items-center gap-2">
             <button onClick={() => setDark(!dark)} className={`h-9 w-9 rounded-xl flex items-center justify-center ${dark ? 'bg-slate-700 text-amber-400 hover:bg-slate-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`} title={dark ? 'Light mode' : 'Dark mode'}>{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</button>
-            <button onClick={() => setSideOpen(!sideOpen)} className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl ${dark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>More</button>
+            <button onClick={() => setSideOpen(!sideOpen)} className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl ${dark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}><MenuIcon className="h-3.5 w-3.5" /> More</button>
           </div>
         </div>
         <div className="max-w-6xl mx-auto overflow-x-auto scrollbar-none"><div className="flex px-4 pb-2 gap-1 min-w-max">{topNav.map(n => (<button key={n.page} onClick={() => goTo(n.page)} className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${page === n.page ? 'bg-emerald-600 text-white shadow-sm' : dark ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}><n.icon className="h-3.5 w-3.5" /> {n.label}</button>))}{sideNav.some(n => n.page === page) && <span className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white shadow-sm">{sideNav.find(n => n.page === page)!.label}</span>}</div></div>
@@ -81,7 +77,7 @@ function Layout({ dark, setDark }: { dark: boolean; setDark: (v: boolean) => voi
         {page === 'products' && <Products />}
         {page === 'customers' && <Customers dark={dark} />}
         {page === 'replacements' && <Replacements dark={dark} />}
-        {page === 'reels' && <SiteSettings dark={dark} />}
+        {page === 'reels' && <Reels dark={dark} />}
         {page === 'settings' && <SiteSettings dark={dark} />}
       </main>
     </div>

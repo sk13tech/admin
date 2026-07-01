@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Package, ShoppingCart, IndianRupee, Mail, Clock, CheckCircle, TrendingUp, Users, AlertTriangle, X } from 'lucide-react';
+import { Package, ShoppingCart, Mail, Clock, CheckCircle, TrendingUp, Users, ChevronRight, AlertTriangle, X } from 'lucide-react';
 
 function money(n: number) { return `₹${(n || 0).toLocaleString('en-IN')}`; }
 
@@ -15,32 +15,24 @@ export default function Dashboard({ goTo, dark = false }: Props) {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    let productCount = 0;
-    let contactCount = 0;
-    Promise.all([getDocs(collection(db, 'products')), getDocs(collection(db, 'contacts'))]).then(([p, c]) => {
-      productCount = p.size; contactCount = c.size;
-    });
-
+    let productCount = 0; let contactCount = 0; let countsLoaded = false;
+    Promise.all([getDocs(collection(db, 'products')), getDocs(collection(db, 'contacts'))]).then(([p, c]) => { productCount = p.size; contactCount = c.size; countsLoaded = true; });
     return onSnapshot(collection(db, 'orders'), snap => {
-      const s: any = { totalOrders: snap.size, totalProducts: productCount, totalContacts: contactCount, totalRevenue: 0, pending: 0, confirmed: 0, processing: 0, shipped: 0, delivered: 0, replacement: 0 };
-      const all: any[] = [];
-      const txns: Record<string, number> = {};
+      const st: any = { totalOrders: snap.size, totalProducts: productCount, totalContacts: contactCount, totalRevenue: 0, pending: 0, confirmed: 0, processing: 0, shipped: 0, delivered: 0, replacement: 0 };
+      const all: any[] = []; const txns: Record<string, number> = {};
       snap.forEach(d => {
         const x = d.data();
         if (x.transactionId === 'AWAITING_PAYMENT' || x.transactionId === 'AUTO_CANCELLED_UNPAID') return;
-        if (x.status !== 'cancelled') {
-          s.totalRevenue += x.totalAmount || 0;
-          s[x.status] = (s[x.status] || 0) + 1;
-        }
-        if (x.replacementRequested && x.replacementStatus !== 'reshipped') s.replacement++;
+        if (x.status !== 'cancelled') { st.totalRevenue += x.totalAmount || 0; st[x.status] = (st[x.status] || 0) + 1; }
+        if (x.replacementRequested && x.replacementStatus !== 'reshipped') st.replacement++;
         all.push({ id: d.id, ...x });
         if (x.transactionId && x.transactionId !== 'GIFTCARD' && x.status !== 'cancelled') txns[x.transactionId] = (txns[x.transactionId] || 0) + 1;
       });
       all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setRecent(all.slice(0, 5));
-      setStats(s);
+      setStats(st);
       setDupTxns(Object.entries(txns).filter(([_, c]) => c > 1).map(([t]) => t));
-      setLoading(false);
+      if (countsLoaded || snap.size > 0) setLoading(false);
     });
   }, []);
 
@@ -61,19 +53,16 @@ export default function Dashboard({ goTo, dark = false }: Props) {
     { label: 'Delivered', value: stats.delivered, color: '#10b981' },
     { label: 'Replacement', value: stats.replacement, color: '#8b5cf6' },
   ];
-  const slices = allSlices.filter(s => s.value > 0);
-  const total = slices.reduce((sum, s) => sum + s.value, 0) || 1;
-  let acc = 0;
-  const paths = slices.map(s => {
-    const start = acc / total;
-    const end = (acc + s.value) / total;
-    acc += s.value;
-    const sa = start * 2 * Math.PI - Math.PI / 2;
-    const ea = end * 2 * Math.PI - Math.PI / 2;
-    const large = s.value / total > 0.5 ? 1 : 0;
+  const slices = allSlices.filter(sl => sl.value > 0);
+  const total = slices.reduce((sum, sl) => sum + sl.value, 0) || 1;
+  let cumulative = 0;
+  const paths = slices.map(sl => {
+    const start = cumulative / total; const end = (cumulative + sl.value) / total; cumulative += sl.value;
+    const sa = start * 2 * Math.PI - Math.PI / 2; const ea = end * 2 * Math.PI - Math.PI / 2;
+    const largeArc = sl.value / total > 0.5 ? 1 : 0;
     const x1 = 50 + 40 * Math.cos(sa), y1 = 50 + 40 * Math.sin(sa);
     const x2 = 50 + 40 * Math.cos(ea), y2 = 50 + 40 * Math.sin(ea);
-    return { ...s, d: slices.length === 1 ? 'M50,10 A40,40 0 1,1 49.99,10 Z' : `M50,50 L${x1},${y1} A40,40 0 ${large},1 ${x2},${y2} Z`, pct: Math.round(s.value / total * 100) };
+    return { ...sl, d: slices.length === 1 ? 'M50,10 A40,40 0 1,1 49.99,10 Z' : `M50,50 L${x1},${y1} A40,40 0 ${largeArc},1 ${x2},${y2} Z`, pct: Math.round(sl.value / total * 100) };
   });
 
   return (
@@ -117,6 +106,24 @@ export default function Dashboard({ goTo, dark = false }: Props) {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className={`text-sm font-bold uppercase tracking-wider ${dark ? 'text-slate-200' : 'text-[#1c1a16]'}`}>Recent Orders</h2>
+          <button onClick={() => goTo('orders')} className="text-xs text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">View All <ChevronRight className="h-3 w-3" /></button>
+        </div>
+        <div className={`rounded-2xl border ${dark ? 'border-slate-700 bg-slate-800 divide-slate-700' : 'border-[#e8e6e1] bg-white divide-slate-100'} overflow-hidden divide-y`}>
+          {recent.length === 0 && <p className="p-8 text-center text-sm text-slate-400">No orders yet</p>}
+          {recent.map(o => (
+            <div key={o.id} className={`px-5 py-3 flex items-center gap-3 text-sm ${dark ? 'hover:bg-slate-700/40' : 'hover:bg-slate-50/50'}`}>
+              <span className="font-mono text-xs text-slate-400 w-20 flex-shrink-0 truncate">#{o.orderId || o.id.slice(-6)}</span>
+              <span className={`flex-1 truncate font-medium ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{o.customer?.name || '—'}</span>
+              <span className={`font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{money(o.totalAmount)}</span>
+              <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full ${o.status === 'delivered' ? 'bg-emerald-100 text-emerald-700' : o.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{o.status}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
