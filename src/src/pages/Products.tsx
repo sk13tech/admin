@@ -23,68 +23,31 @@ export default function Products() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Products</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage your product catalog</p>
-        </div>
-        <button onClick={openNew} className="bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-emerald-700 hover:shadow-lg transition-all inline-flex items-center gap-2">
-          <Plus className="h-4 w-4" /> Add Product
-        </button>
+        <h1 className="text-2xl font-bold text-slate-900">Products ({products.length})</h1>
+        <button onClick={openNew} className="bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-emerald-700 inline-flex items-center gap-2"><Plus className="h-4 w-4" /> Add Product</button>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {products.map(p => (
-          <div key={p.id} className="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-xl hover:border-slate-300 transition-all hover:-translate-y-1">
-            {p.image ? (
-              <div className="relative overflow-hidden bg-slate-100 h-48">
-                <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                {p.stock <= 0 && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">Out of Stock</span>
-                  </div>
-                )}
+          <div key={p.id} className="rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-md transition-shadow">
+            {p.image && <img src={p.image} alt={p.name} className="w-full h-40 object-cover bg-slate-100" />}
+            <div className="p-4">
+              <h3 className="text-sm font-semibold text-slate-900 line-clamp-1">{p.name}</h3>
+              <p className="text-xs text-slate-500 mt-1">{p.category}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-lg font-bold text-slate-900">₹{p.price}</span>
+                {p.mrp > p.price && <span className="text-xs text-slate-400 line-through">₹{p.mrp}</span>}
               </div>
-            ) : (
-              <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                <Pencil className="h-8 w-8 text-slate-400" />
-              </div>
-            )}
-            <div className="p-5">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <h3 className="text-sm font-bold text-slate-900 line-clamp-2 flex-1">{p.name}</h3>
-                {p.stock > 0 && (
-                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md font-semibold">{p.stock} left</span>
-                )}
-              </div>
-              <p className="text-xs text-slate-500 mb-3 capitalize">{p.category}</p>
-              <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-xl font-bold text-slate-900">₹{p.price}</span>
-                {p.mrp > p.price && (
-                  <>
-                    <span className="text-sm text-slate-400 line-through">₹{p.mrp}</span>
-                    <span className="text-xs font-semibold text-emerald-600">{Math.round((1 - p.price / p.mrp) * 100)}% OFF</span>
-                  </>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <button onClick={() => openEdit(p)} className="flex-1 bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-2.5 rounded-lg hover:bg-slate-200 transition-colors inline-flex items-center justify-center gap-1.5">
-                  <Pencil className="h-3.5 w-3.5" /> Edit
-                </button>
-                <button onClick={() => { if (confirm('Delete this product?')) deleteProduct(p.id); }} className="h-9 w-9 rounded-lg border border-red-200 flex items-center justify-center hover:bg-red-50 hover:border-red-300 transition-colors">
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                </button>
+              <div className="flex gap-2 mt-3">
+                <button onClick={() => openEdit(p)} className="flex-1 bg-slate-100 text-slate-600 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-slate-200 inline-flex items-center justify-center gap-1.5"><Pencil className="h-3 w-3" /> Edit</button>
+                <button onClick={() => { if (confirm('Delete?')) deleteProduct(p.id); }} className="h-8 w-8 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-red-50"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
               </div>
             </div>
           </div>
         ))}
-        {products.length === 0 && (
-          <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-12 text-center">
-            <Pencil className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-sm text-slate-400">No products yet. Click "Add Product" to get started.</p>
-          </div>
-        )}
+        {products.length === 0 && <p className="col-span-full text-center py-12 text-sm text-slate-400">No products yet</p>}
       </div>
 
       {show && (
