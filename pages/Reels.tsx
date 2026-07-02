@@ -3,9 +3,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Plus, Trash2, Save, Loader2, Play } from 'lucide-react';
 
-type Props = { dark?: boolean };
-
-export default function Reels({ dark = false }: Props) {
+export default function Reels() {
   const [reels, setReels] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -30,8 +28,8 @@ export default function Reels({ dark = false }: Props) {
     setSaving(false);
   };
 
-  const card = `${dark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-2xl border`;
-  const input = `${dark ? 'bg-slate-700 border-slate-600 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'} w-full rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 font-mono text-xs`;
+  const card = 'bg-white border-slate-200 rounded-2xl border';
+  const input = 'bg-slate-50 border-slate-200 text-slate-800 w-full rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 font-mono text-xs';
 
   if (loading) return <div className="py-20 text-center"><Loader2 className="h-6 w-6 animate-spin text-slate-400 mx-auto" /></div>;
 
@@ -39,7 +37,7 @@ export default function Reels({ dark = false }: Props) {
     <div className="space-y-4 max-w-2xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={`text-2xl font-bold ${dark ? 'text-white' : 'text-slate-900'}`}>Reels</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Reels</h1>
           <p className="text-xs text-slate-400 mt-1">Add up to 4 YouTube Shorts or video URLs</p>
         </div>
         <button onClick={addReel} disabled={reels.length >= 4} className="bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-emerald-700 disabled:opacity-40 inline-flex items-center gap-2"><Plus className="h-4 w-4" /> Add Reel</button>
@@ -57,7 +55,7 @@ export default function Reels({ dark = false }: Props) {
           <div key={i} className={`${card} p-4 flex items-center gap-3`}>
             <span className="text-xs font-bold text-slate-400 w-6 text-center flex-shrink-0">{i + 1}</span>
             <input value={url} onChange={e => updateReel(i, e.target.value)} className={input} placeholder="https://youtube.com/shorts/abc123" />
-            <button onClick={() => removeReel(i)} className="h-9 w-9 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center justify-center flex-shrink-0"><Trash2 className="h-4 w-4 text-red-500" /></button>
+            <button onClick={() => removeReel(i)} className="h-9 w-9 rounded-xl hover:bg-red-50 flex items-center justify-center flex-shrink-0"><Trash2 className="h-4 w-4 text-red-500" /></button>
           </div>
         ))}
       </div>

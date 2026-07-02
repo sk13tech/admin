@@ -12,6 +12,11 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+// Check if Firebase config is available
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  console.error('Firebase configuration is missing. Please create a .env file with your Firebase credentials.');
+}
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
@@ -28,16 +33,24 @@ export async function adminLogin(email: string, password: string): Promise<{ use
     }
     return { user: cred.user, error: '' };
   } catch (e: any) {
-    const msg = e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential' ? 'Invalid email or password'
-      : e.code === 'auth/user-not-found' ? 'Account not found'
-      : e.code === 'auth/too-many-requests' ? 'Too many attempts. Try later.'
+    const msg = e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
+      ? 'Invalid email or password'
+      : e.code === 'auth/user-not-found'
+      ? 'Account not found'
+      : e.code === 'auth/too-many-requests'
+      ? 'Too many attempts. Try later.'
       : 'Login failed';
     return { user: null, error: msg };
   }
 }
 
-export async function adminLogout() { await fbSignOut(auth); }
-export function onAdminAuth(cb: (u: User | null) => void) { return onAuthStateChanged(auth, cb); }
+export async function adminLogout() {
+  await fbSignOut(auth);
+}
+
+export function onAdminAuth(cb: (u: User | null) => void) {
+  return onAuthStateChanged(auth, cb);
+}
 
 /* ── Dashboard Stats ── */
 export async function getDashboardStats() {
@@ -46,20 +59,26 @@ export async function getDashboardStats() {
     getDocs(collection(db, 'products')),
     getDocs(collection(db, 'contacts')),
   ]);
-  let totalRevenue = 0; let pending = 0; let delivered = 0;
+
+  let totalRevenue = 0;
+  let pending = 0;
+  let delivered = 0;
   ordersSnap.forEach(d => {
     const data = d.data();
     totalRevenue += data.totalAmount || 0;
     if (data.status === 'pending') pending++;
     if (data.status === 'delivered') delivered++;
   });
+
   return { totalOrders: ordersSnap.size, totalProducts: productsSnap.size, totalContacts: contactsSnap.size, totalRevenue, pending, delivered };
 }
 
 /* ── Products CRUD ── */
 export function subscribeProducts(cb: (p: any[]) => void) {
   return onSnapshot(collection(db, 'products'), snap => {
-    const arr: any[] = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() })); cb(arr);
+    const arr: any[] = [];
+    snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+    cb(arr);
   });
 }
 
@@ -73,12 +92,15 @@ export async function updateProduct(id: string, data: Record<string, any>) {
   await updateDoc(doc(db, 'products', id), { ...data, _updatedAt: serverTimestamp() });
 }
 
-export async function deleteProduct(id: string) { await deleteDoc(doc(db, 'products', id)); }
+export async function deleteProduct(id: string) {
+  await deleteDoc(doc(db, 'products', id));
+}
 
 /* ── Orders ── */
 export function subscribeOrders(cb: (o: any[]) => void) {
   return onSnapshot(collection(db, 'orders'), snap => {
-    const arr: any[] = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+    const arr: any[] = [];
+    snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
     arr.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     cb(arr);
   });
@@ -94,7 +116,9 @@ export async function updateOrderStatus(id: string, status: string) {
 /* ── Coupons ── */
 export function subscribeCoupons(cb: (c: any[]) => void) {
   return onSnapshot(collection(db, 'coupons'), snap => {
-    const arr: any[] = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() })); cb(arr);
+    const arr: any[] = [];
+    snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+    cb(arr);
   });
 }
 
@@ -106,12 +130,16 @@ export async function toggleCoupon(code: string, active: boolean) {
   await updateDoc(doc(db, 'coupons', code), { active });
 }
 
-export async function deleteCoupon(code: string) { await deleteDoc(doc(db, 'coupons', code)); }
+export async function deleteCoupon(code: string) {
+  await deleteDoc(doc(db, 'coupons', code));
+}
 
 /* ── Gift Cards ── */
 export function subscribeGiftCards(cb: (g: any[]) => void) {
   return onSnapshot(collection(db, 'giftcards'), snap => {
-    const arr: any[] = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() })); cb(arr);
+    const arr: any[] = [];
+    snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+    cb(arr);
   });
 }
 
@@ -119,18 +147,23 @@ export async function createGiftCard(code: string, balance: number) {
   await setDoc(doc(db, 'giftcards', code.toUpperCase()), { balance, active: true });
 }
 
-export async function deleteGiftCard(code: string) { await deleteDoc(doc(db, 'giftcards', code)); }
+export async function deleteGiftCard(code: string) {
+  await deleteDoc(doc(db, 'giftcards', code));
+}
 
 /* ── Contacts ── */
 export function subscribeContacts(cb: (c: any[]) => void) {
   return onSnapshot(collection(db, 'contacts'), snap => {
-    const arr: any[] = []; snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+    const arr: any[] = [];
+    snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
     arr.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     cb(arr);
   });
 }
 
-export async function deleteContact(id: string) { await deleteDoc(doc(db, 'contacts', id)); }
+export async function deleteContact(id: string) {
+  await deleteDoc(doc(db, 'contacts', id));
+}
 
 /* ── Site Config ── */
 export async function getSiteConfig() {
