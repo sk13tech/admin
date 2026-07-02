@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { User } from 'firebase/auth';
 import { onAdminAuth, adminLogin, adminLogout } from './firebase';
-import { LayoutDashboard, ShoppingCart, Package, Users, RotateCcw, Settings, Play, LogOut, Lock, Loader2, Menu as MenuIcon, X } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Users, RotateCcw, Settings, Play, LogOut, Lock, Loader2, Menu as MenuIcon, X, Tag, Gift } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Orders from './pages/Orders';
 import Products from './pages/Products';
@@ -9,6 +9,8 @@ import Customers from './pages/Customers';
 import Replacements from './pages/Replacements';
 import SiteSettings from './pages/SiteSettings';
 import Reels from './pages/Reels';
+import Coupons from './pages/Coupons';
+import GiftCards from './pages/GiftCards';
 
 function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -40,7 +42,7 @@ function LoginScreen() {
   );
 }
 
-type Page = 'dashboard' | 'orders' | 'products' | 'customers' | 'replacements' | 'reels' | 'settings';
+type Page = 'dashboard' | 'orders' | 'products' | 'customers' | 'replacements' | 'reels' | 'settings' | 'coupons' | 'giftcards';
 const topNav = [
   { label: 'Dashboard', page: 'dashboard' as Page, icon: LayoutDashboard },
   { label: 'Orders', page: 'orders' as Page, icon: ShoppingCart },
@@ -49,6 +51,8 @@ const topNav = [
 const sideNav = [
   { label: 'Products', page: 'products' as Page, icon: Package },
   { label: 'Customers', page: 'customers' as Page, icon: Users },
+  { label: 'Coupons', page: 'coupons' as Page, icon: Tag },
+  { label: 'Gift Cards', page: 'giftcards' as Page, icon: Gift },
   { label: 'Reels', page: 'reels' as Page, icon: Play },
   { label: 'Settings', page: 'settings' as Page, icon: Settings },
 ];
@@ -76,6 +80,8 @@ function Layout() {
         {page === 'products' && <Products />}
         {page === 'customers' && <Customers />}
         {page === 'replacements' && <Replacements />}
+        {page === 'coupons' && <Coupons />}
+        {page === 'giftcards' && <GiftCards />}
         {page === 'reels' && <Reels />}
         {page === 'settings' && <SiteSettings />}
       </main>

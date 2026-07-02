@@ -88,7 +88,11 @@ export default function Orders() {
                     <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Order Status</h3>
                   </div>
                   <div className={`px-4 py-3 rounded-lg font-bold capitalize border ${statusConfig[sel.status]?.bgColor} ${statusConfig[sel.status]?.color} flex items-center gap-2 justify-center`}>
-                    {statusConfig[sel.status]?.icon && <statusConfig.status.icon className="h-5 w-5" />}
+                    {sel.status === 'pending' && <Clock className="h-5 w-5" />}
+                    {sel.status === 'confirmed' && <CheckCircle2 className="h-5 w-5" />}
+                    {sel.status === 'processing' && <Package className="h-5 w-5" />}
+                    {sel.status === 'shipped' && <Truck className="h-5 w-5" />}
+                    {sel.status === 'delivered' && <CheckCircle2 className="h-5 w-5" />}
                     <span className="text-base">{sel.status}</span>
                   </div>
                 </div>
