@@ -19,9 +19,11 @@ export default function GiftCards() {
   };
 
   const genCode = () => {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let c = 'GC-';
-    for (let i = 0; i < 8; i++) c += chars[Math.floor(Math.random() * chars.length)];
+    // Generate 16 random digits
+    let c = '';
+    for (let i = 0; i < 16; i++) {
+      c += Math.floor(Math.random() * 10).toString();
+    }
     setCode(c);
   };
 

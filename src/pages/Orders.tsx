@@ -18,6 +18,7 @@ export default function Orders() {
   const [sel, setSel] = useState<any>(null);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [trackingId, setTrackingId] = useState('');
 
   useEffect(() => subscribeOrders(setOrders), []);
 
@@ -238,10 +239,50 @@ export default function Orders() {
                   <Truck className="h-4 w-4 text-slate-600" />
                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Update Order Status</h3>
                 </div>
-                <div className="flex gap-2 flex-wrap">
-                  {['pending', 'confirmed', 'processing', 'shipped', 'delivered'].map(st => (
-                    <button key={st} onClick={() => { updateOrderStatus(sel.id, st); setSel({ ...sel, status: st }); }} disabled={sel.status === st} className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize transition-all ${sel.status === st ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} disabled:opacity-50`}>{st}</button>
-                  ))}
+                <div className="space-y-3">
+                  <div className="flex gap-2 flex-wrap">
+                    {['pending', 'confirmed', 'processing', 'shipped', 'delivered'].map(st => (
+                      <button 
+                        key={st} 
+                        onClick={async () => { 
+                          if (st === 'shipped') {
+                            if (!trackingId) {
+                              alert('Please enter a tracking ID before marking as shipped');
+                              return;
+                            }
+                            await updateOrderStatus(sel.id, st, trackingId);
+                            setSel({ ...sel, status: st, trackingId });
+                            setTrackingId('');
+                          } else {
+                            await updateOrderStatus(sel.id, st);
+                            setSel({ ...sel, status: st });
+                          }
+                        }} 
+                        disabled={sel.status === st} 
+                        className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize transition-all ${sel.status === st ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} disabled:opacity-50`}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {/* Tracking ID Input */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5">Tracking ID (Required for Shipped)</label>
+                    <input 
+                      type="text" 
+                      value={trackingId} 
+                      onChange={e => setTrackingId(e.target.value)} 
+                      placeholder="Enter tracking ID for shipment" 
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 font-mono"
+                    />
+                    {sel.trackingId && (
+                      <p className="text-xs text-slate-500 mt-1.5 flex items-center gap-1">
+                        <Truck className="h-3 w-3" />
+                        Current Tracking: <span className="font-mono font-semibold text-slate-700">{sel.trackingId}</span>
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

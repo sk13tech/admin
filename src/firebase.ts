@@ -106,10 +106,11 @@ export function subscribeOrders(cb: (o: any[]) => void) {
   });
 }
 
-export async function updateOrderStatus(id: string, status: string) {
+export async function updateOrderStatus(id: string, status: string, trackingId?: string) {
   const updates: Record<string, any> = { status };
   if (status === 'delivered') updates.deliveredAt = new Date().toISOString();
   if (['shipped', 'delivered'].includes(status)) updates.canCancel = false;
+  if (status === 'shipped' && trackingId) updates.trackingId = trackingId;
   await updateDoc(doc(db, 'orders', id), updates);
 }
 
