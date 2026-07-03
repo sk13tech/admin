@@ -9,6 +9,7 @@ export default function SiteSettings() {
   const [reels, setReels] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     Promise.all([getSiteConfig(), getCategories()]).then(([c, cat]) => {
@@ -21,10 +22,18 @@ export default function SiteSettings() {
 
   const save = async () => {
     setSaving(true);
-    await Promise.all([
-      updateSiteConfig({ ...cfg, instagramReels: reels.filter(Boolean).slice(0, 4), lastUpdated: new Date().toISOString() }),
-      updateCategories(cats),
-    ]);
+    setSaved(false);
+    try {
+      await Promise.all([
+        updateSiteConfig({ ...cfg, instagramReels: reels.filter(Boolean).slice(0, 4), lastUpdated: new Date().toISOString() }),
+        updateCategories(cats),
+      ]);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (error) {
+      alert('Failed to save settings. Please try again.');
+      console.error('Save error:', error);
+    }
     setSaving(false);
   };
 
@@ -46,7 +55,10 @@ export default function SiteSettings() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Site Settings</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Site Settings</h1>
+          {saved && <p className="text-sm text-emerald-600 font-semibold mt-1">✓ Settings saved successfully!</p>}
+        </div>
         <button onClick={save} disabled={saving} className="bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-emerald-700 disabled:opacity-40 inline-flex items-center gap-2">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Changes
         </button>

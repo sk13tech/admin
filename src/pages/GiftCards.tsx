@@ -19,12 +19,17 @@ export default function GiftCards() {
   };
 
   const genCode = () => {
-    // Generate 16 random digits
-    let c = '';
-    for (let i = 0; i < 16; i++) {
-      c += Math.floor(Math.random() * 10).toString();
+    // Generate format: 7FWW-6WPZ-753S-4736 (alphanumeric with hyphens)
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const groups = [];
+    for (let i = 0; i < 4; i++) {
+      let group = '';
+      for (let j = 0; j < 4; j++) {
+        group += chars[Math.floor(Math.random() * chars.length)];
+      }
+      groups.push(group);
     }
-    setCode(c);
+    setCode(groups.join('-'));
   };
 
   return (
