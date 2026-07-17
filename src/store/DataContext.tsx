@@ -356,7 +356,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Order field update — only whitelisted fields allowed
   const ALLOWED_ORDER_FIELDS = new Set([
-    'status', 'cancelRemark', 'cancelledAt', 'refundTxnId', 'refundDate', 'trackingLink',
+    'status', 'cancelRemark', 'cancelledAt', 'refundTxnId', 'refundDate', 'trackingLink', 'trackingId',
   ]);
 
   const updateOrderFields = async (userId: string, docId: string, fields: Record<string, unknown>) => {

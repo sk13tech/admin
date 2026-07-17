@@ -76,8 +76,11 @@ const Orders: React.FC<{ onBack: () => void; onViewOrder: (order: Order) => void
               >
                 <div className="flex-1 min-w-0">
                   <span className="text-[15px] font-[600] text-ios-label">{order.id}</span>
-                  <div className="mt-[3px]">
+                  <div className="mt-[3px] flex items-center gap-[5px]">
                     <IOSBadge label={order.status} color={STATUS_COLORS[order.status] || '#8e8e93'} />
+                    {order.status === 'cancelled' && order.refundTxnId && (
+                      <IOSBadge label="refunded" color={STATUS_COLORS['refunded']} />
+                    )}
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0 ml-3">

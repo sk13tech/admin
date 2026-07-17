@@ -172,7 +172,12 @@ const OrderDetail: React.FC<{ order: Order; onBack: () => void }> = ({ order: in
 
         {/* Status Badge */}
         <div className="px-5 pt-4 flex items-center justify-between">
-          <IOSBadge label={order.status} color={STATUS_COLORS[order.status] || '#8e8e93'} />
+          <div className="flex items-center gap-[5px]">
+            <IOSBadge label={order.status} color={STATUS_COLORS[order.status] || '#8e8e93'} />
+            {order.status === 'cancelled' && order.refundTxnId && (
+              <IOSBadge label="refunded" color={STATUS_COLORS['refunded']} />
+            )}
+          </div>
           <button onClick={() => setShowStatusSheet(true)} className="text-[15px] text-ios-blue font-[500]">
             Update Status
           </button>
